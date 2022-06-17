@@ -30,6 +30,8 @@ if __name__ == '__main__':
         'random_sample_ratio': 2,
 
         'log_image_every_n': 2,
+
+        'data_path': '/data/training',
     }
     
     wandb.init(

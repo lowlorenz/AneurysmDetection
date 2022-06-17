@@ -43,7 +43,7 @@ class SegmentationModel3d(pl.LightningModule):
         self.stddev = metrics.StdDev()
         self.bias = metrics.Bias()
 
-        data_path = Path('data')
+        data_path = Path(self.hparams['data_path'])
         files = list(data_path.glob('*.*'))
         self.files_orig = sorted(
             list(filter(lambda file: 'orig.nii.gz' in str(file), files)))
