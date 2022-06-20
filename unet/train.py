@@ -11,8 +11,8 @@ if __name__ == '__main__':
     
     defaults = {
         'learning_rate': 0.01,
-        'loss': 'tversky',
-        'alpha': 0.9,
+        'loss': 'dice',
+        'alpha': 0.7,
         'blocks': 3,
         'batch_size': 10,
         'initial_features': 32,
@@ -23,15 +23,15 @@ if __name__ == '__main__':
         'p_elastic': 0.2,
         'p_affine': 0.8,
 
-        'patch_size': 48,
+        'patch_size': 64,
         'samples_per_volume': 30,
-        'queue_length': 30,
+        'queue_length': 300,
         'patch_overlap': 4,
-        'random_sample_ratio': 2,
+        'random_sample_ratio': 4,
 
         'log_image_every_n': 2,
 
-        'data_path': '/data/training',
+        'data_path': 'data',
     }
     
     wandb.init(
@@ -51,13 +51,11 @@ if __name__ == '__main__':
 
     checkpoint_callback = ModelCheckpoint(
         dirpath="checkpoints/",
-        # save_top_k=1,
-        # monitor="step",
-        filename=checkpoint_name + "{epoch:02d}-{avg_validation_sensitivity:.2f}",
+        filename=checkpoint_name + "{epoch:02d}-{avg_validation_jaccard:.2f}",
     )
     
     early_stop_callback = EarlyStopping(
-        monitor="avg_validation_sensitivity",
+        monitor="avg_validation_jaccard",
         patience=4,
         mode="max")
     
@@ -65,7 +63,7 @@ if __name__ == '__main__':
     trainer = pl.Trainer(
         #fast_dev_run=True,
         gpus=[0],
-        limit_train_batches=0.02, limit_val_batches=0.1,
+        # limit_train_batches=0.02, limit_val_batches=0.1,
 
         profiler="simple",
         
@@ -75,8 +73,9 @@ if __name__ == '__main__':
         log_every_n_steps=1,
         check_val_every_n_epoch=3,
         
-        min_epochs=25,
-        max_epochs=100,)
+        min_epochs=50,
+        max_epochs=100,
+        max_time="00:06:00:00")
 
     trainer.fit(model)
 
