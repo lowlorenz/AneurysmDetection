@@ -212,16 +212,22 @@ class SegmentationModel3d(pl.LightningModule):
                 for key in metrics.keys()
             }
 
-    def validation_epoch_end(self, outputs):
-        avg = {f'avg_{key}': 0 for key in outputs[0].keys()}
+    def average_outputs(self, outputs, prefix):
+        avg = {f'{prefix}_{key}': 0 for key in outputs[0].keys()}
 
         for out in outputs:
             for key in out.keys():
-                avg[f'avg_{key}'] += out[key]
+                avg[f'{prefix}_{key}'] += out[key]
 
         for key in avg.keys():
             avg[key] /= len(outputs)
             self.log(key, avg[key])
+
+    def training_epoch_end(self, outputs):
+        self.average_outputs(outputs, 'avg_train_')
+
+    def validation_epoch_end(self, outputs):
+        self.average_outputs(outputs, 'avg_')
 
     def test_step(self, batch, batch_idx):
 
@@ -279,7 +285,7 @@ class SegmentationModel3d(pl.LightningModule):
 
         sampler = tio.data.LabelSampler(patch_size, 'label', label_probabilities={
             0: self.hparams['random_sample_ratio'],
-            1: 1,})
+            1: 1, })
 
         patches_queue = tio.Queue(
             self.train_dataset,
